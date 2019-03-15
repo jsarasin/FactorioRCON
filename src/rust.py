@@ -1,0 +1,160 @@
+import re
+
+class RustMessageType:
+    EVENT = 10
+    SAVE = 11
+    CONNECT = 12
+    LOAD_BEGIN = 14
+    MANIFEST_UPDATE = 15
+    CHAT = 16
+    ENTER_GAME = 17
+    DISCONNECT = 18
+    KILLED_BY_SOMETHING = 19
+    KILLED_BY_ENTITY = 20
+    KILLED_BY_PLAYER = 27
+    SUICIDE = 21
+    UNKNOWN = 22
+    JOINED = 23
+    SERVERVAR = 25
+    EXCEPTION = 26
+
+def get_console_message_info(message):
+    servervar = r'\[ServerVar\]\ (.*)'
+    event = r'\[event\]\ (.*)'
+    saved = r'(Saved\ .*ents,\ cache\(.*\), write\(.*\), disk\(.*\)\.)|(Saving\ complete)'
+    manifest = r'\[Manifest\]\ URI\ IS\ \"(.*)\"'
+    killed_entity = r'(.*)\[([0-9]*)\/([0-9]*)\]\ was\ killed\ by\ ([^\ ]*)(\ \(entity\))$'
+    killed_something = r'(.*)\[([0-9]*)\/([0-9]*)\]\ was\ killed\ by\ ([^\ ]*)(?:$|\n)'
+    killed_by_player = r'(.*)\[([0-9]*)\/([0-9]*)\]\ was\ killed\ by\ (.*)(?=\[)\[([^\/]*)\/([^\]]*)\]'
+    load_begin = r'(.+):([0-9]*)\/([0-9]*)\/([^\ ]*)\ has\ auth\ level\ ([0-9])'
+    joined = r'(.+):([0-9]*)\/([0-9]*)\/([^\ ]*)\ joined\ \[([^/]+)\/([0-9]+)\]'
+    entered = r'([^\ ]*)\[([0-9]*)\/([0-9]*)\]\ has\ entered\ the\ game'
+    disconnecting = r'(.+):([0-9]*)\/([0-9]*)\/(.*)(?=\ disconnecting)\ disconnecting\:\ (.*)'
+    chat = r'\[CHAT\]\ ([^[]*)\[([0-9]*)\/([0-9]*)\]\ \:\ (.*)(?:$|\n)'
+    exception = r'Exception|exception'
+    result = dict()
+
+    try:
+        # Save
+        m = re.search(saved, message)
+        if m is not None:
+            result['message_type'] = RustMessageType.SAVE
+            return result
+
+        # Exception
+        m = re.search(exception, message)
+        if m is not None:
+            result['message_type'] = RustMessageType.EXCEPTION
+            return result
+
+        # Event
+        m = re.search(event, message)
+        if m is not None:
+            result['message_type'] = RustMessageType.EVENT
+            result['event_type'] = m.group(1)
+            return result
+
+        # ServerVar
+        m = re.search(servervar, message)
+        if m is not None:
+            result['message_type'] = RustMessageType.SERVERVAR
+            result['message'] = m.group(1)
+            return result
+
+        # Manifest
+        m = re.search(manifest, message)
+        if m is not None:
+            result['message_type'] = RustMessageType.MANIFEST_UPDATE
+            result['url'] = m.group(1)
+            return result
+
+        # Manifest Update
+        m = re.search(manifest, message)
+        if m is not None:
+            result['message_type'] = RustMessageType.MANIFEST_UPDATE
+            return result
+
+        # Killed by entity
+        m = re.search(killed_entity, message)
+        if m is not None:
+            result['message_type'] = RustMessageType.KILLED_BY_ENTITY
+            return result
+
+        # Killed by something
+        m = re.search(killed_something, message)
+        if m is not None:
+            result['message_type'] = RustMessageType.KILLED_BY_SOMETHING
+            return result
+
+        # Killed by player
+        m = re.search(killed_by_player, message)
+        if m is not None:
+            result['message_type'] = RustMessageType.KILLED_BY_PLAYER
+            result['killer_name'] = m.group(4)
+            result['killer_steam_id'] = m.group(6)
+            result['killed_name'] = m.group(1)
+            result['killed_steam_id'] = m.group(3)
+            return result
+
+        # Begin loading the game resources
+        m = re.search(load_begin, message)
+        if m is not None:
+            result['message_type'] = RustMessageType.LOAD_BEGIN
+            return result
+
+        # Joined loading the game
+        m = re.search(joined, message)
+        if m is not None:
+            assert(m.group(3) == m.group(6)) # For some reason rust puts the steam ID twice. Make sure this doesnt mean something
+            result['message_type'] = RustMessageType.JOINED
+            result['ip'] = m.group(1)
+            result['steam_id'] = m.group(3)
+            result['os'] = m.group(5)
+            result['player_name'] = m.group(4)
+            return result
+
+        # Player Spawn
+        m = re.search(entered, message)
+        if m is not None:
+            result['message_type'] = RustMessageType.ENTER_GAME
+            result['player_name'] = m.group(1)
+            result['steam_id'] = steam_id = m.group(3)
+            return result
+
+        # Disconnect
+        m = re.search(disconnecting, message)
+        if m is not None:
+            result['message_type'] = RustMessageType.DISCONNECT
+            result['ip'] = m.group(1)
+            result['steam_id'] = m.group(3)
+            result['player_name'] = m.group(4)
+            result['disconnect_type'] = m.group(5)
+            return result
+
+        # Chat
+        m = re.search(chat, message)
+        if m is not None:
+            result['message_type'] = RustMessageType.CHAT
+            result['player_name'] = m.group(1)
+            result['steam_id'] = m.group(3)
+            result['message'] = m.group(4)
+            return result
+
+    except TypeError as e:
+        print("TypeError in console message parsing.")
+        print("exception:", e)
+        print("message:", message)
+    except IndexError as e:
+        print("IndexError no such group.")
+        print("exception:", e)
+        print("message:", message)
+        print("reg ex result", m)
+        for index, item in enumerate(m):
+            print(" #%s: %s" % (index,item))
+
+
+
+    result['message_type'] = RustMessageType.UNKNOWN
+    return result
+
+
