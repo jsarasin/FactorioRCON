@@ -46,10 +46,6 @@ from betterbuffer import BetterBuffer, scroll_to_textview_bottom
 from ws4py.exc import HandshakeError
 from rust import RustMessageType, get_console_message_info
 
-from command_browser import WindowCommandBrowser, CommandBrowserModel
-from inventory_browser import WindowInventoryBrowser
-
-from shared import RustyRCONSharedState
 
 class BufferManager:
     def __init__(self, buffer):
@@ -888,13 +884,41 @@ settings = Gtk.Settings.get_default()
 settings.props.gtk_application_prefer_dark_theme = True
 
 def launch_app():
+    quick_test()
+    quit()
     mw = MainWindow()
     Gtk.main()
 
 def quick_test():
-    cat = r'216.198.166.192:1904/76561198317244272/Levy disconnecting: disconnect'
-    res = get_console_message_info(cat)
-    print(res)
+    # import valve.rcon
+
+    # valve.rcon.shell(address=("134.209.223.173","34567"), password="catman123")
+    # address = ("134.209.223.173", 34567)
+    password = "catman123"
+    # address = ("fuckoid.testlabfu.com", 34567)
+    # password = "Catshit!2!"
+
+
+    # with valve.rcon.RCON(address, password) as rcon:
+    #     # response = rcon.execute(json.dumps(dicty))
+    #     response = rcon.execute("/help\n\r")
+    #     print(response.text)
+
+    # python -m valve.rcon fuckoid.testlabfu.com:34567 --password catman123
+
+
+
+    from srcds.rcon import RconConnection
+
+    # For servers that do not support multipart RCON responses like factorio,
+    # enable the single_packet_mode option
+    conn = RconConnection("134.209.223.173", port=34567, password="catman123", single_packet_mode=True)
+    response = conn.exec_command("fuck)")
+    response = conn._recv_pkt()
+    print(response.pkt_id)
+    print(response.pkt_type)
+    print(response.body)
+
 
 launch_app()
 
