@@ -4,7 +4,7 @@
 
 /c target_player="dirk103";
 game.player.print("Player: " .. target_player .. " Online: ")
-/c game.player.print("Player: " .. target_player .. " Online: " .. (((game.players[target_player].afk_time / 100) / 60 ) / 60) .. " AFK: " .. (((game.players[target_player].afk_time / 100) / 60 ) / 60))
+/c game.pslayer.print("Player: " .. target_player .. " Online: " .. (((game.players[target_player].afk_time / 100) / 60 ) / 60) .. " AFK: " .. (((game.players[target_player].afk_time / 100) / 60 ) / 60))
 
 /c game.create_force("FORCE_NAME_ALPHA")
 
@@ -47,3 +47,13 @@ game.player.print("Player: " .. target_player .. " Online: ")
 	;end
 ;end
 
+
+
+# Create a character
+/c game.players[1].character = game.create_entity{name = "player", position = game.players[2].character.position, force = game.forces['faggots']}
+
+# Set control back
+/c game.players['chrisdfer'].set_controller({type=defines.controllers.character, character = game.players['chrisdfer']})
+
+# Reddit
+https://www.reddit.com/r/factorio/comments/4qchhv/013_list_of_helpful_console_commands/
