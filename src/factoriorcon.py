@@ -909,11 +909,15 @@ def quick_test():
 
 
     from srcds.rcon import RconConnection
+    chris_server = "fuckoid.testlabfu.com"
+    chris_port = 34567
+    test_server = "134.209.223.173"
+    test_port = 34567
 
     # For servers that do not support multipart RCON responses like factorio,
     # enable the single_packet_mode option
-    conn = RconConnection("134.209.223.173", port=34567, password="catman123", single_packet_mode=True)
-    response = conn.exec_command("fuck)")
+    conn = RconConnection(chris_server, port=chris_port, password="Catshit!2!", single_packet_mode=True)
+    response = conn.exec_command("hello")
     response = conn._recv_pkt()
     print(response.pkt_id)
     print(response.pkt_type)

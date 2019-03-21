@@ -1,0 +1,49 @@
+ Chris Launch
+ ./bin/x64/factorio --create ./saves/map02/save.zip  --map-gen-settings ./saves/map02/map-gen-settings.json --map-settings ./saves/map02/map-settings.json
+./bin/x64/factorio --start-server-load-latest --server-settings ./saves/map02/server-settings.json
+
+/c target_player="dirk103";
+game.player.print("Player: " .. target_player .. " Online: ")
+/c game.player.print("Player: " .. target_player .. " Online: " .. (((game.players[target_player].afk_time / 100) / 60 ) / 60) .. " AFK: " .. (((game.players[target_player].afk_time / 100) / 60 ) / 60))
+
+/c game.create_force("FORCE_NAME_ALPHA")
+
+# Switch Force
+/c game.players["dirk103"].force = game.forces["gods"]
+
+# Set cease fire
+/c game.forces["FORCE_NAME_ALPHA"].set_cease_fire(" FORCE_NAME_BROVO ", true)
+
+
+# Delete enemies in a given area
+/c local areaf=100; for _, entity in pairs(game.player.surface.find_entities_filtered({area={{game.player.position.x-areaf, game.player.position.y-areaf}, {game.player.position.x+areaf, game.player.position.y+areaf}},  force= "enemy"})) do ;entity.destroy() ; end
+
+
+# Make enemy not attack a player
+/c game.forces["enemy"].set_cease_fire("faggots", true)
+
+
+# Create Oil Patch
+/c game.player.surface.create_entity{name="crude-oil", position=game.player.position}
+
+# Add a new resource patch
+/c local ore=nil
+;local size=5
+;local surface=game.player.surface
+;local density=10
+;for y=-size, size do
+;	for x=-size, size do
+		;a=(size+1-math.abs(x))*10
+		;b=(size+1-math.abs(y))*10
+		;if a<b then
+;			ore=math.random(a*density-a*(density-8), a*density+a*(density-8))
+		;end
+		;if b<a then
+;			ore=math.random(b*density-b*(density-8), b*density+b*(density-8))
+		;end
+		;if surface.get_tile(game.player.position.x+x, game.player.position.y+y).collides_with("ground-tile") then
+;			surface.create_entity({name="uranium-ore", amount=ore, position={game.player.position.x+x, game.player.position.y+y}})
+		;end
+	;end
+;end
+
